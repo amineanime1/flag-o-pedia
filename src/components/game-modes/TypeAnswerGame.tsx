@@ -98,22 +98,20 @@ export const TypeAnswerGame = ({
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="relative max-w-lg mx-auto rounded-lg overflow-hidden bg-card"
+              className="relative max-w-lg mx-auto rounded-lg overflow-hidden bg-card p-4"
             >
-              <motion.div
-                className="relative aspect-video rounded-lg overflow-hidden border border-border"
-              >
+              <div className="relative w-full max-h-[300px] flex items-center justify-center">
                 <img
                   src={questions[currentQuestion].flagUrl}
                   alt="Flag to guess"
-                  className="w-full h-full object-cover"
+                  className="max-w-full max-h-[300px] w-auto h-auto object-contain"
                   style={{
                     filter: questions[currentQuestion].blurAmount 
                       ? `blur(${questions[currentQuestion].blurAmount}px)` 
                       : 'none'
                   }}
                 />
-              </motion.div>
+              </div>
             </motion.div>
 
             <div className="w-full max-w-md mx-auto space-y-4">
