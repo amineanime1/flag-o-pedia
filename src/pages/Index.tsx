@@ -138,10 +138,10 @@ const Index = () => {
               onClick={() => handleGameStart("world")}
               className="p-6 rounded-lg bg-white shadow-lg hover:shadow-xl transition-all group"
             >
-              <div className="flex flex-col items-center gap-4">
+                <div className="flex flex-col items-center gap-4">
                 <Globe className="w-12 h-12 text-primary group-hover:text-primary/80 transition-colors" />
-                <div className="text-center">
-                  <h2 className="text-2xl font-bold text-primary mb-2">World Flags</h2>
+                  <div className="text-center">
+                    <h2 className="text-2xl font-bold text-primary mb-2">World Flags</h2>
                   <p className="text-muted-foreground">Test your knowledge of country flags from around the world</p>
                 </div>
               </div>
@@ -156,10 +156,10 @@ const Index = () => {
               onClick={() => handleGameStart("us")}
               className="p-6 rounded-lg bg-white shadow-lg hover:shadow-xl transition-all group"
             >
-              <div className="flex flex-col items-center gap-4">
+                <div className="flex flex-col items-center gap-4">
                 <Map className="w-12 h-12 text-primary group-hover:text-primary/80 transition-colors" />
-                <div className="text-center">
-                  <h2 className="text-2xl font-bold text-primary mb-2">US State Flags</h2>
+                  <div className="text-center">
+                    <h2 className="text-2xl font-bold text-primary mb-2">US State Flags</h2>
                   <p className="text-muted-foreground">Challenge yourself with flags from US states</p>
                 </div>
               </div>
