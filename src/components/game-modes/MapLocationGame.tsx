@@ -41,18 +41,16 @@ export function MapLocationGame({
   onPlayAgain,
 }: MapLocationGameProps) {
   const [selectedLocation, setSelectedLocation] = useState<[number, number] | null>(null);
-  const [showAnswer, setShowAnswer] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [position, setPosition] = useState({ coordinates: [0, 0], zoom: 1 });
 
   useEffect(() => {
-    setShowAnswer(false);
     setSelectedLocation(null);
   }, [currentQuestion]);
 
   const handleClick = useCallback((geo: any) => {
-    if (isAnswered || showAnswer) return;
+    if (isAnswered) return;
 
     const countryName = geo.properties.name;
     const coordinates: [number, number] = [
@@ -61,11 +59,8 @@ export function MapLocationGame({
     ];
 
     setSelectedLocation(coordinates);
-    setShowAnswer(true);
-
-    const isCorrect = countryName.toLowerCase() === questions[currentQuestion].correctAnswer.toLowerCase();
     onAnswer(countryName);
-  }, [currentQuestion, isAnswered, onAnswer, questions, showAnswer]);
+  }, [currentQuestion, isAnswered, onAnswer]);
 
   const handleZoomIn = () => {
     if (position.zoom >= 4) return;
@@ -91,7 +86,7 @@ export function MapLocationGame({
     }
   };
 
-  if (isAnswered && currentQuestion === questions.length) {
+  if (currentQuestion >= questions.length) {
     return (
       <GameSummary
         score={score}
@@ -113,7 +108,7 @@ export function MapLocationGame({
       q.correctAnswer.toLowerCase() === countryName
     );
 
-    if (showAnswer && isCurrentAnswer) {
+    if (isAnswered && isCurrentAnswer) {
       return "#22c55e"; // Correct answer (green)
     } else if (previousQuestion) {
       if (!previousQuestion.userAnswer) {
@@ -186,44 +181,20 @@ export function MapLocationGame({
         </div>
       </motion.div>
 
-      {/* Current Flag - New Design */}
-      <AnimatePresence>
-        {!showAnswer && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="absolute top-20 left-1/2 -translate-x-1/2 z-10"
-          >
-            <div className="relative group">
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-b from-background/80 to-background/20 backdrop-blur-sm rounded-lg transition-all duration-300 group-hover:backdrop-blur-md"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              />
-              <motion.div
-                className="relative bg-card border border-border rounded-lg overflow-hidden shadow-xl"
-                whileHover={{ scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 300, damping: 15 }}
-              >
-                <div className="relative aspect-[3/2] w-[300px] sm:w-[400px]">
-                  <img
-                    src={questions[currentQuestion].flagUrl}
-                    alt="Flag to guess"
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                </div>
-                <div className="p-4 text-center bg-card/95">
-                  <p className="text-lg font-medium text-primary">
-                    Click on the map to locate this flag's country
-                  </p>
-                </div>
-              </motion.div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Current Flag - Minimalist Design */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="absolute top-4 right-4 z-10"
+      >
+        <div className="bg-card border border-border rounded-lg overflow-hidden shadow-lg w-32">
+          <img
+            src={questions[currentQuestion].flagUrl}
+            alt="Flag to guess"
+            className="w-full h-auto"
+          />
+        </div>
+      </motion.div>
 
       {/* Map Container */}
       <div className="w-full h-screen bg-[#1B2A4A] dark:bg-[#0A1628]">
@@ -294,50 +265,6 @@ export function MapLocationGame({
         </ComposableMap>
       </div>
 
-      {/* Answer Overlay */}
-      <AnimatePresence>
-        {showAnswer && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-background/40 backdrop-blur-sm z-20 flex items-center justify-center"
-          >
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              className="bg-card p-8 rounded-lg shadow-2xl max-w-md mx-4"
-            >
-              <div className="relative w-full aspect-[3/2] mb-6 rounded-lg overflow-hidden shadow-lg">
-                <img
-                  src={questions[currentQuestion].flagUrl}
-                  alt={questions[currentQuestion].correctAnswer}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-              </div>
-              <h3 className="text-xl font-medium text-muted-foreground mb-2">
-                The correct country was:
-              </h3>
-              <p className="text-4xl font-bold text-primary mb-6">
-                {questions[currentQuestion].correctAnswer}
-              </p>
-              <div className="flex justify-center">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="px-6 py-3 bg-primary text-primary-foreground rounded-lg"
-                  onClick={() => setShowAnswer(false)}
-                >
-                  Continue
-                </motion.button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Bottom Bar */}
       <motion.div 
         initial={{ y: 20, opacity: 0 }}
@@ -371,7 +298,7 @@ export function MapLocationGame({
           <button
             onClick={onSkipQuestion}
             className="flex items-center gap-2 px-4 py-2 bg-secondary rounded-full hover:bg-secondary/80 transition-colors"
-            disabled={isAnswered || showAnswer}
+            disabled={isAnswered}
           >
             <SkipForward className="w-4 h-4" />
             <span>Skip</span>
