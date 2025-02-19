@@ -9,7 +9,7 @@ interface Question {
   correctAnswer: string;
 }
 
-const questions: Question[] = [
+const worldFlags: Question[] = [
   {
     flagUrl: "https://flagcdn.com/w640/fr.png",
     options: ["France", "Netherlands", "Luxembourg", "Russia"],
@@ -24,6 +24,74 @@ const questions: Question[] = [
     flagUrl: "https://flagcdn.com/w640/br.png",
     options: ["Argentina", "Brazil", "Colombia", "Uruguay"],
     correctAnswer: "Brazil"
+  },
+  {
+    flagUrl: "https://flagcdn.com/w640/de.png",
+    options: ["Belgium", "Germany", "Netherlands", "Austria"],
+    correctAnswer: "Germany"
+  },
+  {
+    flagUrl: "https://flagcdn.com/w640/it.png",
+    options: ["Spain", "Italy", "Greece", "Portugal"],
+    correctAnswer: "Italy"
+  },
+  {
+    flagUrl: "https://flagcdn.com/w640/au.png",
+    options: ["New Zealand", "Australia", "Fiji", "Samoa"],
+    correctAnswer: "Australia"
+  },
+  {
+    flagUrl: "https://flagcdn.com/w640/ca.png",
+    options: ["United States", "Canada", "Mexico", "Norway"],
+    correctAnswer: "Canada"
+  },
+  {
+    flagUrl: "https://flagcdn.com/w640/in.png",
+    options: ["Pakistan", "India", "Bangladesh", "Sri Lanka"],
+    correctAnswer: "India"
+  }
+];
+
+const usFlags: Question[] = [
+  {
+    flagUrl: "https://flagcdn.com/w640/us-ca.png",
+    options: ["Texas", "California", "Florida", "New York"],
+    correctAnswer: "California"
+  },
+  {
+    flagUrl: "https://flagcdn.com/w640/us-tx.png",
+    options: ["Arizona", "New Mexico", "Texas", "Oklahoma"],
+    correctAnswer: "Texas"
+  },
+  {
+    flagUrl: "https://flagcdn.com/w640/us-ny.png",
+    options: ["New York", "Massachusetts", "Pennsylvania", "Connecticut"],
+    correctAnswer: "New York"
+  },
+  {
+    flagUrl: "https://flagcdn.com/w640/us-fl.png",
+    options: ["Georgia", "Florida", "Alabama", "South Carolina"],
+    correctAnswer: "Florida"
+  },
+  {
+    flagUrl: "https://flagcdn.com/w640/us-ak.png",
+    options: ["Montana", "Alaska", "Maine", "Washington"],
+    correctAnswer: "Alaska"
+  },
+  {
+    flagUrl: "https://flagcdn.com/w640/us-hi.png",
+    options: ["Hawaii", "Puerto Rico", "Guam", "American Samoa"],
+    correctAnswer: "Hawaii"
+  },
+  {
+    flagUrl: "https://flagcdn.com/w640/us-co.png",
+    options: ["Arizona", "New Mexico", "Colorado", "Utah"],
+    correctAnswer: "Colorado"
+  },
+  {
+    flagUrl: "https://flagcdn.com/w640/us-ma.png",
+    options: ["Rhode Island", "Massachusetts", "New Hampshire", "Maine"],
+    correctAnswer: "Massachusetts"
   }
 ];
 
@@ -32,7 +100,18 @@ const Index = () => {
   const [score, setScore] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
+  const [gameMode, setGameMode] = useState<"world" | "us" | null>(null);
   const { toast } = useToast();
+
+  const questions = gameMode === "world" ? worldFlags : usFlags;
+
+  const handleGameStart = (mode: "world" | "us") => {
+    setGameMode(mode);
+    setCurrentQuestion(0);
+    setScore(0);
+    setSelectedAnswer(null);
+    setIsAnswered(false);
+  };
 
   const handleAnswer = (answer: string) => {
     if (isAnswered) return;
@@ -56,7 +135,6 @@ const Index = () => {
       });
     }
 
-    // Move to next question after delay
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion((prev) => prev + 1);
@@ -65,6 +143,59 @@ const Index = () => {
       }
     }, 2000);
   };
+
+  const handlePlayAgain = () => {
+    setGameMode(null);
+    setCurrentQuestion(0);
+    setScore(0);
+    setSelectedAnswer(null);
+    setIsAnswered(false);
+  };
+
+  if (!gameMode) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 px-4 py-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-2xl mx-auto space-y-8"
+        >
+          <header className="text-center space-y-4">
+            <motion.h1
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-4xl font-bold text-primary"
+            >
+              Flag-o-pedia
+            </motion.h1>
+            <p className="text-lg text-muted-foreground">Choose your challenge:</p>
+          </header>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => handleGameStart("world")}
+              className="p-6 rounded-lg bg-white shadow-lg hover:shadow-xl transition-all"
+            >
+              <h2 className="text-2xl font-bold text-primary mb-2">World Flags</h2>
+              <p className="text-muted-foreground">Test your knowledge of country flags from around the world</p>
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => handleGameStart("us")}
+              className="p-6 rounded-lg bg-white shadow-lg hover:shadow-xl transition-all"
+            >
+              <h2 className="text-2xl font-bold text-primary mb-2">US State Flags</h2>
+              <p className="text-muted-foreground">Challenge yourself with flags from US states</p>
+            </motion.button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 px-4 py-8">
@@ -79,7 +210,7 @@ const Index = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-4xl font-bold text-primary"
           >
-            Flag-o-pedia
+            {gameMode === "world" ? "World Flags" : "US State Flags"}
           </motion.h1>
           <div className="flex items-center justify-center space-x-2 text-lg font-medium">
             <span className="text-muted-foreground">Score:</span>
@@ -138,12 +269,20 @@ const Index = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center"
+            className="text-center space-y-4"
           >
-            <h2 className="text-2xl font-bold text-primary mb-2">Game Complete!</h2>
+            <h2 className="text-2xl font-bold text-primary">Game Complete!</h2>
             <p className="text-lg text-muted-foreground">
               Final Score: {score} out of {questions.length}
             </p>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handlePlayAgain}
+              className="px-6 py-3 bg-primary text-white rounded-lg shadow-lg hover:shadow-xl transition-all"
+            >
+              Play Again
+            </motion.button>
           </motion.div>
         )}
       </motion.div>
