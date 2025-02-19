@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Globe, Map, CheckCircle2, XCircle, Trophy, Home, SkipForward } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { GameSummary } from "@/components/GameSummary";
+import { Timer } from "@/components/Timer";
 import { normalizeString } from '@/utils/flagData';
 import type { Question, GameHistory } from "@/types/game";
 
@@ -37,6 +38,7 @@ export const TypeAnswerGame = ({
   onBackToMenu,
   onPlayAgain,
   setInputValue,
+  timeRemaining,
 }: TypeAnswerGameProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -70,13 +72,18 @@ export const TypeAnswerGame = ({
           <motion.div 
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="flex items-center justify-center space-x-2 text-lg font-medium"
+            className="flex items-center justify-center gap-4"
           >
-            <Trophy className="w-5 h-5 text-primary" />
-            <span className="text-muted-foreground">Score:</span>
-            <span className="text-primary">{score}</span>
-            <span className="text-muted-foreground">/</span>
-            <span className="text-primary">{questions.length}</span>
+            <div className="flex items-center gap-2 text-lg font-medium">
+              <Trophy className="w-5 h-5 text-primary" />
+              <span className="text-muted-foreground">Score:</span>
+              <span className="text-primary">{score}</span>
+              <span className="text-muted-foreground">/</span>
+              <span className="text-primary">{questions.length}</span>
+            </div>
+            {timeRemaining !== null && (
+              <Timer timeRemaining={timeRemaining} />
+            )}
           </motion.div>
         </header>
 
@@ -93,12 +100,20 @@ export const TypeAnswerGame = ({
               animate={{ scale: 1, opacity: 1 }}
               className="relative max-w-lg mx-auto rounded-lg overflow-hidden bg-card"
             >
-              <img
-                src={questions[currentQuestion].flagUrl}
-                alt="Flag"
-                className="w-full h-auto object-contain bg-white dark:bg-gray-800"
-                style={{ aspectRatio: '3/2' }}
-              />
+              <motion.div
+                className="relative aspect-video rounded-lg overflow-hidden border border-border"
+              >
+                <img
+                  src={questions[currentQuestion].flagUrl}
+                  alt="Flag to guess"
+                  className="w-full h-full object-cover"
+                  style={{
+                    filter: questions[currentQuestion].blurAmount 
+                      ? `blur(${questions[currentQuestion].blurAmount}px)` 
+                      : 'none'
+                  }}
+                />
+              </motion.div>
             </motion.div>
 
             <div className="w-full max-w-md mx-auto space-y-4">

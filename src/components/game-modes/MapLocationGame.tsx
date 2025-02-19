@@ -11,6 +11,7 @@ import { Home, SkipForward, Trophy, Maximize2, Minimize2, Info, X } from "lucide
 import type { Question, GameHistory } from "@/types/game";
 import { GameSummary } from "@/components/GameSummary";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Timer } from "@/components/Timer";
 
 // Use a simpler, more reliable map source
 const geoUrl = "https://unpkg.com/world-atlas@2.0.2/countries-50m.json";
@@ -40,6 +41,7 @@ export function MapLocationGame({
   onSkipQuestion,
   onBackToMenu,
   onPlayAgain,
+  timeRemaining,
 }: MapLocationGameProps) {
   const [selectedLocation, setSelectedLocation] = useState<[number, number] | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -151,6 +153,10 @@ export function MapLocationGame({
               <span className="font-medium">{score}/{questions.length}</span>
             </motion.div>
             
+            {timeRemaining !== null && (
+              <Timer timeRemaining={timeRemaining} />
+            )}
+            
             <motion.div 
               className="bg-card px-3 py-1 rounded-full"
               initial={{ scale: 0.8 }}
@@ -193,6 +199,11 @@ export function MapLocationGame({
             src={questions[currentQuestion].flagUrl}
             alt="Flag to guess"
             className="w-full h-auto"
+            style={{
+              filter: questions[currentQuestion].blurAmount 
+                ? `blur(${questions[currentQuestion].blurAmount}px)` 
+                : 'none'
+            }}
           />
         </div>
       </motion.div>
