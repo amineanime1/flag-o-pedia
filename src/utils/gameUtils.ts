@@ -30,7 +30,7 @@ export const worldDifficulties: DifficultyLevel[] = [
   },
   {
     name: "Expert",
-    flagCount: 100,
+    flagCount: 254,
   },
   {
     name: "No Death Mode",

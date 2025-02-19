@@ -39,6 +39,10 @@ export function DifficultySelect({
 
   const getModifierDescription = (diff: DifficultyLevel) => {
     const mods = [];
+    if (diff.name.includes("Easy")) mods.push("Quick warmup");
+    if (diff.name.includes("Medium")) mods.push("A bit of a challenge");
+    if (diff.name.includes("Hard")) mods.push("Test your knowledge");
+    if (diff.name.includes("Expert")) mods.push("All the flags");
     if (diff.modifiers?.noDeath) mods.push("Game Over on First Mistake");
     if (diff.modifiers?.blurLevel) mods.push(`${diff.modifiers.blurLevel} Blur Effect`);
     if (diff.modifiers?.timeLimit) mods.push(`${diff.modifiers.timeLimit / 60} Minute Time Limit`);
@@ -82,7 +86,7 @@ export function DifficultySelect({
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/0 group-hover:from-primary/10 transition-colors" />
                 
-                <Icon className={`w-8 h-8 mb-4 ${colorClass}`} />
+                {/* <Icon className={`w-8 h-8 mb-4 ${colorClass}`} /> */}
                 
                 <h2 className={`text-xl font-bold mb-2 ${colorClass}`}>
                   {diff.name}

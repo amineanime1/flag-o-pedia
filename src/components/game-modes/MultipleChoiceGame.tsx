@@ -15,6 +15,7 @@ interface MultipleChoiceGameProps {
   onAnswer: (answer: string) => void;
   onBackToMenu: () => void;
   onPlayAgain: () => void;
+  timeRemaining?: number | null;
 }
 
 export const MultipleChoiceGame = ({

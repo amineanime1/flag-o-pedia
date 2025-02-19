@@ -26,6 +26,7 @@ interface MapLocationGameProps {
   onSkipQuestion: () => void;
   onBackToMenu: () => void;
   onPlayAgain: () => void;
+  timeRemaining?: number | null;
 }
 
 export function MapLocationGame({

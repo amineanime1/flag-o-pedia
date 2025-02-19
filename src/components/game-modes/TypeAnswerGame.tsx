@@ -20,6 +20,7 @@ interface TypeAnswerGameProps {
   onBackToMenu: () => void;
   onPlayAgain: () => void;
   setInputValue: (value: string) => void;
+  timeRemaining?: number | null;
 }
 
 export const TypeAnswerGame = ({
