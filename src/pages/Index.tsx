@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { Globe, Map, CheckCircle2, XCircle, Trophy, PlayCircle, RefreshCcw, Home, BarChart2, Type, SkipForward } from "lucide-react";
@@ -30,9 +30,27 @@ const Index = () => {
   const [inputValue, setInputValue] = useState("");
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [gameHistory, setGameHistory] = useState<GameHistory[]>([]);
+  const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
+  const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    // Cleanup timer on unmount
+    return () => {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+      }
+    };
+  }, []);
 
   const handleDifficultySelect = (difficulty: DifficultyLevel) => {
     const selectedFlags = generateQuestions(gameState.mode!, difficulty.flagCount);
+    
+    // Apply blur to questions if needed
+    if (difficulty.modifiers?.blurLevel) {
+      selectedFlags.forEach(flag => {
+        flag.blurAmount = getBlurAmount(difficulty.modifiers!.blurLevel!);
+      });
+    }
     
     setGameQuestions(selectedFlags);
     setGameState(prev => ({ ...prev, difficulty }));
@@ -41,6 +59,23 @@ const Index = () => {
     setSelectedAnswer(null);
     setIsAnswered(false);
     setGameHistory([]);
+    
+    // Setup timer if time limit modifier is present
+    if (difficulty.modifiers?.timeLimit) {
+      setTimeRemaining(difficulty.modifiers.timeLimit);
+      const interval = setInterval(() => {
+        setTimeRemaining(prev => {
+          if (prev === null || prev <= 1) {
+            clearInterval(interval);
+            // End game when time runs out
+            handleGameEnd(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      setTimerInterval(interval);
+    }
     
     toast({
       title: `Starting ${difficulty.name} mode!`, 
@@ -77,6 +112,33 @@ const Index = () => {
     window.location.href = '/stats';
   };
 
+  const handleGameEnd = (timeUp: boolean = false) => {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      setTimerInterval(null);
+    }
+
+    // Save game stats
+    saveGameResult({
+      mode: gameState.mode!,
+      gameMode: gameState.gameMode!,
+      difficulty: gameState.difficulty!.name,
+      score,
+      total: gameQuestions.length,
+      modifiers: gameState.difficulty?.modifiers,
+      timeRemaining: timeRemaining || undefined,
+      perfectRun: score === gameQuestions.length
+    });
+
+    if (timeUp) {
+      toast({
+        title: "Time's Up!",
+        description: `Final Score: ${score} out of ${gameQuestions.length}`,
+        duration: 3000,
+      });
+    }
+  };
+
   const handleAnswer = (option: string) => {
     if (isAnswered) return;
 
@@ -86,13 +148,25 @@ const Index = () => {
     const isCorrect = option === gameQuestions[currentQuestion].correctAnswer;
     if (isCorrect) {
       setScore(prev => prev + 1);
+    } else if (gameState.difficulty?.modifiers?.noDeath) {
+      // End game immediately on first mistake in no death mode
+      handleGameEnd();
+      toast({
+        title: "Game Over!",
+        description: "No Death Mode: Game ends on first mistake",
+        duration: 3000,
+      });
+      return;
     }
 
     // Add current question to game history
     setGameHistory(prev => [...prev, {
       flagUrl: gameQuestions[currentQuestion].flagUrl,
       correctAnswer: gameQuestions[currentQuestion].correctAnswer,
-      userAnswer: option
+      userAnswer: option,
+      timeSpent: gameState.difficulty?.modifiers?.timeLimit 
+        ? gameState.difficulty.modifiers.timeLimit - (timeRemaining || 0)
+        : undefined
     }]);
 
     setTimeout(() => {
@@ -103,20 +177,7 @@ const Index = () => {
         setInputValue("");
         setIsCorrect(null);
       } else {
-        // Save game stats when game is complete
-        saveGameResult({
-          mode: gameState.mode!,
-          gameMode: gameState.gameMode!,
-          difficulty: gameState.difficulty!.name,
-          score: score + (isCorrect ? 1 : 0),
-          total: gameQuestions.length
-        });
-        
-        toast({
-          title: "Game Complete!",
-          description: `Final Score: ${score + (isCorrect ? 1 : 0)} out of ${gameQuestions.length}`,
-          duration: 3000,
-        });
+        handleGameEnd();
       }
     }, 1000);
   };
@@ -140,19 +201,7 @@ const Index = () => {
     } else {
       // Handle last question skip
       setIsAnswered(true);
-      saveGameResult({
-        mode: gameState.mode!,
-        gameMode: gameState.gameMode!,
-        difficulty: gameState.difficulty!.name,
-        score: score,
-        total: gameQuestions.length
-      });
-      
-      toast({
-        title: "Game Complete!",
-        description: `Final Score: ${score} out of ${gameQuestions.length}`,
-        duration: 3000,
-      });
+      handleGameEnd();
     }
   };
 
@@ -201,6 +250,7 @@ const Index = () => {
         onBackToMenu={handleBackToMenu}
         onPlayAgain={handlePlayAgain}
         setInputValue={setInputValue}
+        timeRemaining={timeRemaining}
       />
     );
   }
@@ -218,6 +268,7 @@ const Index = () => {
         onAnswer={handleAnswer}
         onBackToMenu={handleBackToMenu}
         onPlayAgain={handlePlayAgain}
+        timeRemaining={timeRemaining}
       />
     );
   }
@@ -235,6 +286,7 @@ const Index = () => {
         onSkipQuestion={handleSkipQuestion}
         onBackToMenu={handleBackToMenu}
         onPlayAgain={handlePlayAgain}
+        timeRemaining={timeRemaining}
       />
     );
   }
