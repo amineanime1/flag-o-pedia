@@ -43,7 +43,7 @@ const Index = () => {
     setGameHistory([]);
     
     toast({
-      title: `Starting ${difficulty.name} mode!`,
+      title: `Starting ${difficulty.name} mode!`, 
       description: `${difficulty.flagCount} flags to identify. Good luck! 🍀`,
       duration: 2000,
     });
