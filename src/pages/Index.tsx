@@ -42,6 +42,16 @@ const Index = () => {
   const [inputValue, setInputValue] = useState("");
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [gameHistory, setGameHistory] = useState<GameHistory[]>([]);
+  
+  // Move useRef to top level
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Move useEffect to top level and add condition inside
+  useEffect(() => {
+    if (gameState.gameMode === "type" && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [currentQuestion, gameState.gameMode]);
 
   const handleDifficultySelect = (difficulty: DifficultyLevel) => {
     const selectedFlags = generateQuestions(gameState.mode!, difficulty.flagCount);
@@ -337,15 +347,6 @@ const Index = () => {
   }
 
   if (gameState.difficulty && gameState.gameMode === "type") {
-    const inputRef = useRef<HTMLInputElement>(null);
-
-    useEffect(() => {
-      // Focus input when moving to a new question
-      if (inputRef.current) {
-        inputRef.current.focus();
-      }
-    }, [currentQuestion]);
-
     return (
       <div className="min-h-screen bg-background px-4 py-8">
         <motion.div className="max-w-2xl mx-auto space-y-8">
