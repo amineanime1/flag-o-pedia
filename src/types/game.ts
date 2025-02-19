@@ -1,6 +1,7 @@
 export interface Question {
   flagUrl: string;
   correctAnswer: string;
+  aliases?: string[];
   options?: string[];
   coordinates?: [number, number];
 }

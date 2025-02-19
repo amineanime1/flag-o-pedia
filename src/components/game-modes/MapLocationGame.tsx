@@ -92,7 +92,7 @@ export function MapLocationGame({
         score={score}
         total={questions.length}
         onPlayAgain={onPlayAgain}
-        gameMode="map"
+        gameMode="type"
         mode={mode}
         questions={gameHistory}
       />
@@ -209,7 +209,7 @@ export function MapLocationGame({
           }}
         >
           <ZoomableGroup
-            center={position.coordinates}
+            center={[position.coordinates[0] || 0, position.coordinates[1] || 0]}
             zoom={position.zoom}
             onMoveEnd={handleMoveEnd}
             minZoom={1}
