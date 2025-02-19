@@ -4,6 +4,7 @@ export interface Question {
   aliases?: string[];
   options?: string[];
   coordinates?: [number, number];
+  blurAmount?: number;
 }
 
 export interface GameHistory {
@@ -11,6 +12,7 @@ export interface GameHistory {
   correctAnswer: string;
   userAnswer?: string;
   coordinates?: [number, number];
+  timeSpent?: number;
 }
 
 export interface GameState {
@@ -19,14 +21,24 @@ export interface GameState {
   difficulty: {
     name: string;
     flagCount: number;
+    modifiers?: GameModifiers;
   } | null;
 }
 
-export interface GameStats {
+export interface GameModifiers {
+  noDeath?: boolean;
+  blurLevel?: "none" | "light" | "medium" | "heavy";
+  timeLimit?: number; // in seconds
+}
+
+export interface GameStats extends GameHistory {
   mode: "world" | "us";
   gameMode: "multiple" | "type" | "map";
   difficulty: string;
   score: number;
   total: number;
   timestamp?: number;
+  modifiers?: GameModifiers;
+  timeRemaining?: number;
+  perfectRun?: boolean;
 } 
