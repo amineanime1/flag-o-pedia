@@ -95,30 +95,143 @@ const usFlags: Question[] = [
   }
 ];
 
+const generateWorldFlags = (count: number): Question[] => {
+  // This is just a subset of available flags. You can add more following the same pattern
+  const allWorldFlags: Question[] = [
+    {
+      flagUrl: "https://flagcdn.com/w640/fr.png",
+      options: ["France", "Netherlands", "Luxembourg", "Russia"],
+      correctAnswer: "France"
+    },
+    {
+      flagUrl: "https://flagcdn.com/w640/jp.png",
+      options: ["China", "Japan", "South Korea", "Vietnam"],
+      correctAnswer: "Japan"
+    },
+    {
+      flagUrl: "https://flagcdn.com/w640/br.png",
+      options: ["Argentina", "Brazil", "Colombia", "Uruguay"],
+      correctAnswer: "Brazil"
+    },
+    {
+      flagUrl: "https://flagcdn.com/w640/de.png",
+      options: ["Belgium", "Germany", "Netherlands", "Austria"],
+      correctAnswer: "Germany"
+    },
+    {
+      flagUrl: "https://flagcdn.com/w640/it.png",
+      options: ["Spain", "Italy", "Greece", "Portugal"],
+      correctAnswer: "Italy"
+    },
+    {
+      flagUrl: "https://flagcdn.com/w640/au.png",
+      options: ["New Zealand", "Australia", "Fiji", "Samoa"],
+      correctAnswer: "Australia"
+    },
+    {
+      flagUrl: "https://flagcdn.com/w640/ca.png",
+      options: ["United States", "Canada", "Mexico", "Norway"],
+      correctAnswer: "Canada"
+    },
+    {
+      flagUrl: "https://flagcdn.com/w640/in.png",
+      options: ["Pakistan", "India", "Bangladesh", "Sri Lanka"],
+      correctAnswer: "India"
+    },
+    // Adding more flags
+    {
+      flagUrl: "https://flagcdn.com/w640/es.png",
+      options: ["Spain", "Portugal", "Italy", "Greece"],
+      correctAnswer: "Spain"
+    },
+    {
+      flagUrl: "https://flagcdn.com/w640/kr.png",
+      options: ["Japan", "China", "South Korea", "Vietnam"],
+      correctAnswer: "South Korea"
+    },
+    // Add more flags here...
+  ];
+  
+  // Shuffle and return requested number of flags
+  return allWorldFlags.sort(() => Math.random() - 0.5).slice(0, count);
+};
+
+const generateUSFlags = (count: number): Question[] => {
+  // Return requested number of US state flags
+  return usFlags.sort(() => Math.random() - 0.5).slice(0, count);
+};
+
+const getDifficultyFlags = (mode: "world" | "us", difficulty: string) => {
+  if (mode === "world") {
+    switch (difficulty) {
+      case "easy":
+        return generateWorldFlags(15);
+      case "medium":
+        return generateWorldFlags(30);
+      case "hard":
+        return generateWorldFlags(50);
+      case "extreme":
+        return generateWorldFlags(100); // or however many flags we have
+      default:
+        return generateWorldFlags(15);
+    }
+  } else {
+    switch (difficulty) {
+      case "easy":
+        return generateUSFlags(10);
+      case "medium":
+        return generateUSFlags(15);
+      case "hard":
+        return generateUSFlags(25);
+      case "extreme":
+        return generateUSFlags(50);
+      default:
+        return generateUSFlags(10);
+    }
+  }
+};
+
+interface GameMode {
+  id: "world" | "us";
+  title: string;
+  icon: React.ReactNode;
+  description: string;
+}
+
+interface Difficulty {
+  id: string;
+  title: string;
+  description: string;
+  flagCount: number;
+}
+
 const Index = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [gameMode, setGameMode] = useState<"world" | "us" | null>(null);
+  const [difficulty, setDifficulty] = useState<string | null>(null);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const { toast } = useToast();
 
-  const questions = gameMode === "world" ? worldFlags : usFlags;
-
-  const handleGameStart = (mode: "world" | "us") => {
+  const handleGameStart = (mode: "world" | "us", diff: string) => {
+    const newQuestions = getDifficultyFlags(mode, diff);
     setGameMode(mode);
+    setDifficulty(diff);
+    setQuestions(newQuestions);
     setCurrentQuestion(0);
     setScore(0);
     setSelectedAnswer(null);
     setIsAnswered(false);
     toast({
-      title: `Starting ${mode === "world" ? "World Flags" : "US State Flags"} Quiz!`,
+      title: `Starting ${mode === "world" ? "World" : "US State"} Flags - ${diff.charAt(0).toUpperCase() + diff.slice(1)}`,
       description: "Good luck! 🍀",
       duration: 2000,
     });
   };
 
-  const handleAnswer = (answer: string) => {
+    const handleAnswer = (answer: string) => {
     if (isAnswered) return;
     
     setSelectedAnswer(answer);
@@ -151,6 +264,7 @@ const Index = () => {
 
   const handlePlayAgain = () => {
     setGameMode(null);
+    setDifficulty(null);
     setCurrentQuestion(0);
     setScore(0);
     setSelectedAnswer(null);
@@ -184,56 +298,101 @@ const Index = () => {
               transition={{ delay: 0.2 }}
               className="text-lg text-muted-foreground"
             >
-              Choose your challenge:
+              Choose your category:
             </motion.p>
           </header>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <motion.button
-              whileHover={{ scale: 1.02, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
+            <motion.div
+              whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
-              onClick={() => handleGameStart("world")}
-              className="p-6 rounded-lg bg-white shadow-lg hover:shadow-xl transition-all group"
+              className="space-y-4"
             >
-              <div className="flex flex-col items-center gap-4">
-                <Globe className="w-12 h-12 text-primary group-hover:text-primary/80 transition-colors" />
-                <div className="text-center">
-                  <h2 className="text-2xl font-bold text-primary mb-2">World Flags</h2>
-                  <p className="text-muted-foreground">Test your knowledge of country flags from around the world</p>
+              <div className="p-6 rounded-lg bg-white shadow-lg">
+                <div className="flex flex-col items-center gap-4">
+                  <Globe className="w-12 h-12 text-primary" />
+                  <div className="text-center">
+                    <h2 className="text-2xl font-bold text-primary mb-2">World Flags</h2>
+                    <p className="text-muted-foreground mb-4">Test your knowledge of country flags</p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 w-full">
+                    <button
+                      onClick={() => handleGameStart("world", "easy")}
+                      className="w-full p-2 bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
+                    >
+                      Easy (15 flags)
+                    </button>
+                    <button
+                      onClick={() => handleGameStart("world", "medium")}
+                      className="w-full p-2 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition-colors"
+                    >
+                      Medium (30 flags)
+                    </button>
+                    <button
+                      onClick={() => handleGameStart("world", "hard")}
+                      className="w-full p-2 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+                    >
+                      Hard (50 flags)
+                    </button>
+                    <button
+                      onClick={() => handleGameStart("world", "extreme")}
+                      className="w-full p-2 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors"
+                    >
+                      Extreme (All flags)
+                    </button>
+                  </div>
                 </div>
               </div>
-            </motion.button>
+            </motion.div>
 
-            <motion.button
-              whileHover={{ scale: 1.02, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
+            <motion.div
+              whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
-              onClick={() => handleGameStart("us")}
-              className="p-6 rounded-lg bg-white shadow-lg hover:shadow-xl transition-all group"
+              className="space-y-4"
             >
-              <div className="flex flex-col items-center gap-4">
-                <Map className="w-12 h-12 text-primary group-hover:text-primary/80 transition-colors" />
-                <div className="text-center">
-                  <h2 className="text-2xl font-bold text-primary mb-2">US State Flags</h2>
-                  <p className="text-muted-foreground">Challenge yourself with flags from US states</p>
+              <div className="p-6 rounded-lg bg-white shadow-lg">
+                <div className="flex flex-col items-center gap-4">
+                  <Map className="w-12 h-12 text-primary" />
+                  <div className="text-center">
+                    <h2 className="text-2xl font-bold text-primary mb-2">US State Flags</h2>
+                    <p className="text-muted-foreground mb-4">Challenge yourself with US states</p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 w-full">
+                    <button
+                      onClick={() => handleGameStart("us", "easy")}
+                      className="w-full p-2 bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
+                    >
+                      Easy (10 flags)
+                    </button>
+                    <button
+                      onClick={() => handleGameStart("us", "medium")}
+                      className="w-full p-2 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition-colors"
+                    >
+                      Medium (15 flags)
+                    </button>
+                    <button
+                      onClick={() => handleGameStart("us", "hard")}
+                      className="w-full p-2 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+                    >
+                      Hard (25 flags)
+                    </button>
+                    <button
+                      onClick={() => handleGameStart("us", "extreme")}
+                      className="w-full p-2 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors"
+                    >
+                      All States (50 flags)
+                    </button>
+                  </div>
                 </div>
               </div>
-            </motion.button>
+            </motion.div>
           </div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="text-center text-muted-foreground mt-8"
-          >
-            <p>Pick a category to start your flag adventure! 🚀</p>
-          </motion.div>
         </motion.div>
       </div>
     );
