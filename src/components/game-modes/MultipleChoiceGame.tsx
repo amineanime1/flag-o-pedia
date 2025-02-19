@@ -30,6 +30,7 @@ export const MultipleChoiceGame = ({
   onAnswer,
   onBackToMenu,
   onPlayAgain,
+  timeRemaining,
 }: MultipleChoiceGameProps) => {
   return (
     <div className="min-h-screen bg-background px-4 py-8">
