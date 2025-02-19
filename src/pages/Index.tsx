@@ -12,6 +12,7 @@ import { GameModeSelect } from "@/components/menu/GameModeSelect";
 import { DifficultySelect } from "@/components/menu/DifficultySelect";
 import { TypeAnswerGame } from "@/components/game-modes/TypeAnswerGame";
 import { MultipleChoiceGame } from "@/components/game-modes/MultipleChoiceGame";
+import { MapLocationGame } from "@/components/game-modes/MapLocationGame";
 import type { GameState, Question, GameHistory } from "@/types/game";
 
 const Index = () => {
@@ -52,7 +53,7 @@ const Index = () => {
     setGameState({ mode, gameMode: null, difficulty: null });
   };
 
-  const handleGameModeSelect = (gameMode: "multiple" | "type") => {
+  const handleGameModeSelect = (gameMode: "multiple" | "type" | "map") => {
     setGameState(prev => ({ ...prev, gameMode }));
   };
 
@@ -215,6 +216,23 @@ const Index = () => {
         selectedAnswer={selectedAnswer}
         gameHistory={gameHistory}
         onAnswer={handleAnswer}
+        onBackToMenu={handleBackToMenu}
+        onPlayAgain={handlePlayAgain}
+      />
+    );
+  }
+
+  if (gameState.difficulty && gameState.gameMode === "map") {
+    return (
+      <MapLocationGame
+        mode={gameState.mode}
+        questions={gameQuestions}
+        currentQuestion={currentQuestion}
+        score={score}
+        isAnswered={isAnswered}
+        gameHistory={gameHistory}
+        onAnswer={handleAnswer}
+        onSkipQuestion={handleSkipQuestion}
         onBackToMenu={handleBackToMenu}
         onPlayAgain={handlePlayAgain}
       />

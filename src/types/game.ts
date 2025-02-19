@@ -1,23 +1,31 @@
 export interface Question {
   flagUrl: string;
-  options: string[];
   correctAnswer: string;
-  aliases?: string[];
+  options?: string[];
+  coordinates?: [number, number];
 }
 
 export interface GameHistory {
   flagUrl: string;
   correctAnswer: string;
   userAnswer?: string;
+  coordinates?: [number, number];
 }
 
 export interface GameState {
   mode: "world" | "us" | null;
-  gameMode: "multiple" | "type" | null;
-  difficulty: DifficultyLevel | null;
+  gameMode: "multiple" | "type" | "map" | null;
+  difficulty: {
+    name: string;
+    flagCount: number;
+  } | null;
 }
 
-export interface DifficultyLevel {
-  name: string;
-  flagCount: number;
+export interface GameStats {
+  mode: "world" | "us";
+  gameMode: "multiple" | "type" | "map";
+  difficulty: string;
+  score: number;
+  total: number;
+  timestamp?: number;
 } 
