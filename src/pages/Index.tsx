@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { Globe, Map, CheckCircle2, XCircle, Trophy, PlayCircle, RefreshCcw, Home, BarChart2, Type, SkipForward } from "lucide-react";
@@ -337,6 +337,15 @@ const Index = () => {
   }
 
   if (gameState.difficulty && gameState.gameMode === "type") {
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+      // Focus input when moving to a new question
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }, [currentQuestion]);
+
     return (
       <div className="min-h-screen bg-background px-4 py-8">
         <motion.div className="max-w-2xl mx-auto space-y-8">
@@ -395,6 +404,7 @@ const Index = () => {
               <div className="w-full max-w-md mx-auto space-y-4">
                 <div className="relative">
                   <input
+                    ref={inputRef}
                     type="text"
                     placeholder="Type country name..."
                     value={inputValue}

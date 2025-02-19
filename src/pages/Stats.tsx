@@ -41,30 +41,46 @@ const Stats = () => {
     ? (stats.reduce((acc, curr) => acc + (curr.score / curr.total * 100), 0) / stats.length).toFixed(1)
     : 0;
 
-  const difficultyStats = stats.reduce((acc, curr) => {
-    acc[curr.difficulty] = (acc[curr.difficulty] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const pieData = Object.entries(difficultyStats).map(([name, value]) => ({
-    name,
-    value
-  }));
-
-  const modeStats = stats.reduce((acc, curr) => {
-    if (!acc[curr.mode]) {
-      acc[curr.mode] = { total: 0, correct: 0 };
+  const gameModeStats = stats.reduce((acc, curr) => {
+    const key = curr.gameMode || 'multiple';
+    if (!acc[key]) {
+      acc[key] = { 
+        total: 0, 
+        correct: 0, 
+        games: 0,
+        avgScore: 0 
+      };
     }
-    acc[curr.mode].total += curr.total;
-    acc[curr.mode].correct += curr.score;
+    acc[key].games += 1;
+    acc[key].total += curr.total;
+    acc[key].correct += curr.score;
+    acc[key].avgScore = (acc[key].correct / acc[key].total * 100);
     return acc;
-  }, {} as Record<string, { total: number; correct: number }>);
+  }, {} as Record<string, { total: number; correct: number; games: number; avgScore: number }>);
 
-  const barData = Object.entries(modeStats).map(([mode, data]) => ({
-    name: mode === 'world' ? 'World Flags' : 'US States',
-    correct: data.correct,
-    total: data.total,
-  }));
+  const combinedModeStats = stats.reduce((acc, curr) => {
+    const mode = curr.mode;
+    const gameMode = curr.gameMode || 'multiple';
+    const key = `${mode}-${gameMode}`;
+    
+    if (!acc[key]) {
+      acc[key] = { total: 0, correct: 0, games: 0 };
+    }
+    acc[key].games += 1;
+    acc[key].total += curr.total;
+    acc[key].correct += curr.score;
+    return acc;
+  }, {} as Record<string, { total: number; correct: number; games: number }>);
+
+  const barData = Object.entries(combinedModeStats).map(([key, data]) => {
+    const [mode, gameMode] = key.split('-');
+    return {
+      name: `${mode === 'world' ? 'World' : 'US'} (${gameMode === 'multiple' ? 'MC' : 'Type'})`,
+      correct: data.correct,
+      total: data.total,
+      accuracy: ((data.correct / data.total) * 100).toFixed(1)
+    };
+  });
 
   return (
     <div className="min-h-screen bg-background px-4 py-8">
@@ -95,14 +111,14 @@ const Stats = () => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
                 className="bg-card text-card-foreground p-6 rounded-lg shadow-lg dark:shadow-none"
               >
-                <h3 className="text-lg font-semibold text-primary mb-2">Games Played</h3>
+                <h3 className="text-lg font-semibold text-primary mb-2">Total Games</h3>
                 <p className="text-3xl font-bold">{stats.length}</p>
               </motion.div>
 
@@ -122,6 +138,24 @@ const Stats = () => {
                 transition={{ delay: 0.3 }}
                 className="bg-card text-card-foreground p-6 rounded-lg shadow-lg dark:shadow-none"
               >
+                <h3 className="text-lg font-semibold text-primary mb-2">Best Game Mode</h3>
+                <p className="text-3xl font-bold">
+                  {Object.entries(gameModeStats)
+                    .sort((a, b) => b[1].avgScore - a[1].avgScore)[0][0] === 'multiple' 
+                    ? 'Multiple Choice' 
+                    : 'Type Answer'}
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {Math.max(...Object.values(gameModeStats).map(s => s.avgScore)).toFixed(1)}% accuracy
+                </p>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="bg-card text-card-foreground p-6 rounded-lg shadow-lg dark:shadow-none"
+              >
                 <h3 className="text-lg font-semibold text-primary mb-2">Last Played</h3>
                 <p className="text-3xl font-bold">
                   {new Date(stats[stats.length - 1].date).toLocaleDateString()}
@@ -136,13 +170,28 @@ const Stats = () => {
                 transition={{ delay: 0.4 }}
                 className="bg-card text-card-foreground p-6 rounded-lg shadow-lg dark:shadow-none"
               >
-                <h3 className="text-lg font-semibold text-primary mb-4">Score Distribution</h3>
+                <h3 className="text-lg font-semibold text-primary mb-4">Performance by Game Type</h3>
                 <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <RechartsBarChart data={barData}>
                       <XAxis dataKey="name" />
                       <YAxis />
-                      <Tooltip />
+                      <Tooltip 
+                        content={({ payload, label }) => {
+                          if (payload && payload.length) {
+                            const data = payload[0].payload;
+                            return (
+                              <div className="bg-background p-2 rounded-lg shadow-lg border border-border">
+                                <p className="font-semibold">{label}</p>
+                                <p className="text-sm">Correct: {data.correct}</p>
+                                <p className="text-sm">Total: {data.total}</p>
+                                <p className="text-sm">Accuracy: {data.accuracy}%</p>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
                       <Bar dataKey="correct" fill="#0088FE" name="Correct" />
                       <Bar dataKey="total" fill="#00C49F" name="Total Questions" />
                     </RechartsBarChart>
@@ -154,29 +203,30 @@ const Stats = () => {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.5 }}
-                className="bg-card text-card-foreground p-6 rounded-lg shadow-lg dark:shadow-none"
+                className="bg-card text-card-foreground p-6 rounded-lg shadow-lg dark:shadow-none space-y-6"
               >
-                <h3 className="text-lg font-semibold text-primary mb-4">Difficulty Distribution</h3>
-                <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RechartsPieChart>
-                      <Pie
-                        data={pieData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {pieData.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </RechartsPieChart>
-                  </ResponsiveContainer>
+                <h3 className="text-lg font-semibold text-primary">Game Mode Analysis</h3>
+                
+                <div className="space-y-4">
+                  <div className="bg-secondary/20 p-4 rounded-lg">
+                    <h4 className="font-semibold mb-2">Multiple Choice</h4>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <p>Games Played: {gameModeStats.multiple?.games || 0}</p>
+                      <p>Accuracy: {(gameModeStats.multiple?.avgScore || 0).toFixed(1)}%</p>
+                      <p>Total Questions: {gameModeStats.multiple?.total || 0}</p>
+                      <p>Correct Answers: {gameModeStats.multiple?.correct || 0}</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-secondary/20 p-4 rounded-lg">
+                    <h4 className="font-semibold mb-2">Type Answer</h4>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <p>Games Played: {gameModeStats.type?.games || 0}</p>
+                      <p>Accuracy: {(gameModeStats.type?.avgScore || 0).toFixed(1)}%</p>
+                      <p>Total Questions: {gameModeStats.type?.total || 0}</p>
+                      <p>Correct Answers: {gameModeStats.type?.correct || 0}</p>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             </div>
