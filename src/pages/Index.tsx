@@ -96,7 +96,6 @@ const usFlags: Question[] = [
 ];
 
 const generateWorldFlags = (count: number): Question[] => {
-  // This is just a subset of available flags. You can add more following the same pattern
   const allWorldFlags: Question[] = [
     {
       flagUrl: "https://flagcdn.com/w640/fr.png",
@@ -138,7 +137,6 @@ const generateWorldFlags = (count: number): Question[] => {
       options: ["Pakistan", "India", "Bangladesh", "Sri Lanka"],
       correctAnswer: "India"
     },
-    // Adding more flags
     {
       flagUrl: "https://flagcdn.com/w640/es.png",
       options: ["Spain", "Portugal", "Italy", "Greece"],
@@ -148,16 +146,13 @@ const generateWorldFlags = (count: number): Question[] => {
       flagUrl: "https://flagcdn.com/w640/kr.png",
       options: ["Japan", "China", "South Korea", "Vietnam"],
       correctAnswer: "South Korea"
-    },
-    // Add more flags here...
+    }
   ];
   
-  // Shuffle and return requested number of flags
   return allWorldFlags.sort(() => Math.random() - 0.5).slice(0, count);
 };
 
 const generateUSFlags = (count: number): Question[] => {
-  // Return requested number of US state flags
   return usFlags.sort(() => Math.random() - 0.5).slice(0, count);
 };
 
@@ -171,7 +166,7 @@ const getDifficultyFlags = (mode: "world" | "us", difficulty: string) => {
       case "hard":
         return generateWorldFlags(50);
       case "extreme":
-        return generateWorldFlags(100); // or however many flags we have
+        return generateWorldFlags(100);
       default:
         return generateWorldFlags(15);
     }
@@ -190,20 +185,6 @@ const getDifficultyFlags = (mode: "world" | "us", difficulty: string) => {
     }
   }
 };
-
-interface GameMode {
-  id: "world" | "us";
-  title: string;
-  icon: React.ReactNode;
-  description: string;
-}
-
-interface Difficulty {
-  id: string;
-  title: string;
-  description: string;
-  flagCount: number;
-}
 
 const Index = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -231,7 +212,7 @@ const Index = () => {
     });
   };
 
-    const handleAnswer = (answer: string) => {
+  const handleAnswer = (answer: string) => {
     if (isAnswered) return;
     
     setSelectedAnswer(answer);
@@ -276,7 +257,7 @@ const Index = () => {
     });
   };
 
-  if (!gameMode) {
+  if (!gameMode || !questions.length) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 px-4 py-8">
         <motion.div
