@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { Globe, Map, CheckCircle2, XCircle, Trophy, PlayCircle, RefreshCcw, Home, BarChart2, Type, SkipForward } from "lucide-react";
-import { shuffleArray, worldDifficulties, usDifficulties, type DifficultyLevel } from "@/utils/gameUtils";
+import { shuffleArray, worldDifficulties, usDifficulties, type DifficultyLevel, getBlurAmount } from "@/utils/gameUtils";
 import { generateQuestions, normalizeString } from '@/utils/flagData';
 import { saveGameResult } from '@/utils/statsUtils';
 import { ThemeToggle } from "@/components/ThemeToggle";
