@@ -12,8 +12,8 @@ import type { Question, GameHistory } from "@/types/game";
 import { GameSummary } from "@/components/GameSummary";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
-// High-detail map with natural earth data
-const geoUrl = "https://raw.githubusercontent.com/deldersveld/topojson/master/world-countries-sans-antarctica.json";
+// Use a simpler, more reliable map source
+const geoUrl = "https://unpkg.com/world-atlas@2.0.2/countries-50m.json";
 
 interface MapLocationGameProps {
   mode: "world" | "us";
@@ -186,34 +186,63 @@ export function MapLocationGame({
         </div>
       </motion.div>
 
-      {/* Current Flag */}
+      {/* Current Flag - New Design */}
       <AnimatePresence>
         {!showAnswer && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            className="absolute top-20 left-1/2 -translate-x-1/2 z-10 bg-card shadow-lg rounded-lg overflow-hidden border border-border"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="absolute top-20 left-1/2 -translate-x-1/2 z-10"
           >
-            <img
-              src={questions[currentQuestion].flagUrl}
-              alt="Flag to guess"
-              className="h-32 sm:h-40 w-auto object-cover"
-            />
+            <div className="relative group">
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-b from-background/80 to-background/20 backdrop-blur-sm rounded-lg transition-all duration-300 group-hover:backdrop-blur-md"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              />
+              <motion.div
+                className="relative bg-card border border-border rounded-lg overflow-hidden shadow-xl"
+                whileHover={{ scale: 1.02 }}
+                transition={{ type: "spring", stiffness: 300, damping: 15 }}
+              >
+                <div className="relative aspect-[3/2] w-[300px] sm:w-[400px]">
+                  <img
+                    src={questions[currentQuestion].flagUrl}
+                    alt="Flag to guess"
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                </div>
+                <div className="p-4 text-center bg-card/95">
+                  <p className="text-lg font-medium text-primary">
+                    Click on the map to locate this flag's country
+                  </p>
+                </div>
+              </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Map Container */}
-      <div className="w-full h-screen">
+      <div className="w-full h-screen bg-[#1B2A4A] dark:bg-[#0A1628]">
         <ComposableMap
           projection="geoMercator"
-          className="w-full h-full bg-[#1B2A4A] dark:bg-[#0A1628]"
+          projectionConfig={{
+            scale: 150
+          }}
+          style={{
+            width: "100%",
+            height: "100%"
+          }}
         >
           <ZoomableGroup
             center={position.coordinates}
             zoom={position.zoom}
             onMoveEnd={handleMoveEnd}
+            minZoom={1}
+            maxZoom={4}
           >
             <Geographies geography={geoUrl}>
               {({ geographies }) =>
@@ -228,18 +257,20 @@ export function MapLocationGame({
                         stroke: "#1f2937",
                         strokeWidth: 0.5,
                         outline: "none",
+                        transition: "all 250ms",
                       },
                       hover: {
                         fill: "#94a3b8",
                         stroke: "#1f2937",
-                        strokeWidth: 0.5,
+                        strokeWidth: 1,
                         outline: "none",
                         cursor: "pointer",
+                        filter: "brightness(1.1)",
                       },
                       pressed: {
                         fill: "#64748b",
                         stroke: "#1f2937",
-                        strokeWidth: 0.5,
+                        strokeWidth: 1,
                         outline: "none",
                       },
                     }}
@@ -249,12 +280,63 @@ export function MapLocationGame({
             </Geographies>
             {selectedLocation && (
               <Marker coordinates={selectedLocation}>
-                <circle r={4} fill="#ef4444" />
+                <g transform="translate(-12, -24)">
+                  <path
+                    d="M12 0c-4.4 0-8 3.6-8 8s8 16 8 16 8-11.6 8-16-3.6-8-8-8zm0 12c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z"
+                    fill="#ef4444"
+                    stroke="#fff"
+                    strokeWidth="1.5"
+                  />
+                </g>
               </Marker>
             )}
           </ZoomableGroup>
         </ComposableMap>
       </div>
+
+      {/* Answer Overlay */}
+      <AnimatePresence>
+        {showAnswer && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-background/40 backdrop-blur-sm z-20 flex items-center justify-center"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              className="bg-card p-8 rounded-lg shadow-2xl max-w-md mx-4"
+            >
+              <div className="relative w-full aspect-[3/2] mb-6 rounded-lg overflow-hidden shadow-lg">
+                <img
+                  src={questions[currentQuestion].flagUrl}
+                  alt={questions[currentQuestion].correctAnswer}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+              </div>
+              <h3 className="text-xl font-medium text-muted-foreground mb-2">
+                The correct country was:
+              </h3>
+              <p className="text-4xl font-bold text-primary mb-6">
+                {questions[currentQuestion].correctAnswer}
+              </p>
+              <div className="flex justify-center">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="px-6 py-3 bg-primary text-primary-foreground rounded-lg"
+                  onClick={() => setShowAnswer(false)}
+                >
+                  Continue
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Bottom Bar */}
       <motion.div 
@@ -342,36 +424,6 @@ export function MapLocationGame({
                   </div>
                 </div>
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Answer Overlay */}
-      <AnimatePresence>
-        {showAnswer && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
-          >
-            <motion.div
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              className="bg-card/95 backdrop-blur-sm p-6 rounded-lg shadow-lg text-center"
-            >
-              <p className="text-xl font-semibold mb-2">
-                The correct country was:
-              </p>
-              <p className="text-3xl font-bold text-primary mb-4">
-                {questions[currentQuestion].correctAnswer}
-              </p>
-              <img
-                src={questions[currentQuestion].flagUrl}
-                alt={questions[currentQuestion].correctAnswer}
-                className="h-24 mx-auto mb-4 rounded shadow-md"
-              />
             </motion.div>
           </motion.div>
         )}
