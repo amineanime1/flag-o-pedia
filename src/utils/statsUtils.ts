@@ -4,6 +4,7 @@ export interface GameResult {
   score: number;
   total: number;
   date: string;
+  gameMode?: string; // Add this line to include gameMode as an optional property
 }
 
 export function saveGameResult(result: Omit<GameResult, 'date'>) {
