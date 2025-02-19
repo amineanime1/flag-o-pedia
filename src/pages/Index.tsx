@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { Globe, Map, CheckCircle2, XCircle, Trophy, PlayCircle, RefreshCcw, Home, BarChart2, Type, SkipForward } from "lucide-react";
@@ -29,16 +29,6 @@ const Index = () => {
   const [inputValue, setInputValue] = useState("");
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [gameHistory, setGameHistory] = useState<GameHistory[]>([]);
-  
-  // Move useRef to top level
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  // Move useEffect to top level and add condition inside
-  useEffect(() => {
-    if (gameState.gameMode === "type" && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [currentQuestion, gameState.gameMode]);
 
   const handleDifficultySelect = (difficulty: DifficultyLevel) => {
     const selectedFlags = generateQuestions(gameState.mode!, difficulty.flagCount);
@@ -131,11 +121,12 @@ const Index = () => {
   };
 
   const handleSkipQuestion = () => {
+    setGameHistory(prev => [...prev, {
+      flagUrl: gameQuestions[currentQuestion].flagUrl,
+      correctAnswer: gameQuestions[currentQuestion].correctAnswer
+    }]);
+
     if (currentQuestion < gameQuestions.length - 1) {
-      setGameHistory(prev => [...prev, {
-        flagUrl: gameQuestions[currentQuestion].flagUrl,
-        correctAnswer: gameQuestions[currentQuestion].correctAnswer
-      }]);
       setCurrentQuestion(prev => prev + 1);
       setInputValue("");
       setIsCorrect(null);
@@ -144,6 +135,22 @@ const Index = () => {
         title: "Question Skipped",
         description: `Correct answer: ${gameQuestions[currentQuestion].correctAnswer}`,
         duration: 2000,
+      });
+    } else {
+      // Handle last question skip
+      setIsAnswered(true);
+      saveGameResult({
+        mode: gameState.mode!,
+        gameMode: gameState.gameMode!,
+        difficulty: gameState.difficulty!.name,
+        score: score,
+        total: gameQuestions.length
+      });
+      
+      toast({
+        title: "Game Complete!",
+        description: `Final Score: ${score} out of ${gameQuestions.length}`,
+        duration: 3000,
       });
     }
   };
