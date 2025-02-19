@@ -1,7 +1,7 @@
-
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { Globe, Map, CheckCircle2, XCircle, Trophy, PlayCircle, RefreshCcw } from "lucide-react";
 
 interface Question {
   flagUrl: string;
@@ -111,6 +111,11 @@ const Index = () => {
     setScore(0);
     setSelectedAnswer(null);
     setIsAnswered(false);
+    toast({
+      title: `Starting ${mode === "world" ? "World Flags" : "US State Flags"} Quiz!`,
+      description: "Good luck! 🍀",
+      duration: 2000,
+    });
   };
 
   const handleAnswer = (answer: string) => {
@@ -123,13 +128,13 @@ const Index = () => {
     if (isCorrect) {
       setScore((prev) => prev + 1);
       toast({
-        title: "Correct!",
+        title: "🎉 Correct!",
         description: `That's the flag of ${answer}!`,
         duration: 2000,
       });
     } else {
       toast({
-        title: "Incorrect",
+        title: "❌ Incorrect",
         description: `The correct answer was ${questions[currentQuestion].correctAnswer}`,
         duration: 2000,
       });
@@ -150,6 +155,11 @@ const Index = () => {
     setScore(0);
     setSelectedAnswer(null);
     setIsAnswered(false);
+    toast({
+      title: "Ready for another round?",
+      description: "Choose your challenge! 🌟",
+      duration: 2000,
+    });
   };
 
   if (!gameMode) {
@@ -168,30 +178,62 @@ const Index = () => {
             >
               Flag-o-pedia
             </motion.h1>
-            <p className="text-lg text-muted-foreground">Choose your challenge:</p>
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="text-lg text-muted-foreground"
+            >
+              Choose your challenge:
+            </motion.p>
           </header>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <motion.button
-              whileHover={{ scale: 1.02 }}
+              whileHover={{ scale: 1.02, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
               whileTap={{ scale: 0.98 }}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
               onClick={() => handleGameStart("world")}
-              className="p-6 rounded-lg bg-white shadow-lg hover:shadow-xl transition-all"
+              className="p-6 rounded-lg bg-white shadow-lg hover:shadow-xl transition-all group"
             >
-              <h2 className="text-2xl font-bold text-primary mb-2">World Flags</h2>
-              <p className="text-muted-foreground">Test your knowledge of country flags from around the world</p>
+              <div className="flex flex-col items-center gap-4">
+                <Globe className="w-12 h-12 text-primary group-hover:text-primary/80 transition-colors" />
+                <div className="text-center">
+                  <h2 className="text-2xl font-bold text-primary mb-2">World Flags</h2>
+                  <p className="text-muted-foreground">Test your knowledge of country flags from around the world</p>
+                </div>
+              </div>
             </motion.button>
 
             <motion.button
-              whileHover={{ scale: 1.02 }}
+              whileHover={{ scale: 1.02, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
               whileTap={{ scale: 0.98 }}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
               onClick={() => handleGameStart("us")}
-              className="p-6 rounded-lg bg-white shadow-lg hover:shadow-xl transition-all"
+              className="p-6 rounded-lg bg-white shadow-lg hover:shadow-xl transition-all group"
             >
-              <h2 className="text-2xl font-bold text-primary mb-2">US State Flags</h2>
-              <p className="text-muted-foreground">Challenge yourself with flags from US states</p>
+              <div className="flex flex-col items-center gap-4">
+                <Map className="w-12 h-12 text-primary group-hover:text-primary/80 transition-colors" />
+                <div className="text-center">
+                  <h2 className="text-2xl font-bold text-primary mb-2">US State Flags</h2>
+                  <p className="text-muted-foreground">Challenge yourself with flags from US states</p>
+                </div>
+              </div>
             </motion.button>
           </div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="text-center text-muted-foreground mt-8"
+          >
+            <p>Pick a category to start your flag adventure! 🚀</p>
+          </motion.div>
         </motion.div>
       </div>
     );
@@ -208,16 +250,22 @@ const Index = () => {
           <motion.h1
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl font-bold text-primary"
+            className="text-4xl font-bold text-primary flex items-center justify-center gap-3"
           >
+            {gameMode === "world" ? <Globe className="w-8 h-8" /> : <Map className="w-8 h-8" />}
             {gameMode === "world" ? "World Flags" : "US State Flags"}
           </motion.h1>
-          <div className="flex items-center justify-center space-x-2 text-lg font-medium">
+          <motion.div 
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="flex items-center justify-center space-x-2 text-lg font-medium"
+          >
+            <Trophy className="w-5 h-5 text-primary" />
             <span className="text-muted-foreground">Score:</span>
             <span className="text-primary">{score}</span>
             <span className="text-muted-foreground">/</span>
             <span className="text-primary">{questions.length}</span>
-          </div>
+          </motion.div>
         </header>
 
         <AnimatePresence mode="wait">
@@ -248,7 +296,7 @@ const Index = () => {
                   whileTap={{ scale: isAnswered ? 1 : 0.98 }}
                   onClick={() => handleAnswer(option)}
                   disabled={isAnswered}
-                  className={`w-full p-4 rounded-lg shadow-sm transition-colors duration-200 text-lg font-medium
+                  className={`w-full p-4 rounded-lg shadow-sm transition-colors duration-200 text-lg font-medium flex items-center justify-between
                     ${
                       isAnswered && option === questions[currentQuestion].correctAnswer
                         ? "bg-green-500 text-white"
@@ -258,7 +306,13 @@ const Index = () => {
                     }
                   `}
                 >
-                  {option}
+                  <span>{option}</span>
+                  {isAnswered && option === questions[currentQuestion].correctAnswer && (
+                    <CheckCircle2 className="w-5 h-5" />
+                  )}
+                  {isAnswered && option === selectedAnswer && option !== questions[currentQuestion].correctAnswer && (
+                    <XCircle className="w-5 h-5" />
+                  )}
                 </motion.button>
               ))}
             </div>
@@ -271,20 +325,36 @@ const Index = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-center space-y-4"
           >
-            <h2 className="text-2xl font-bold text-primary">Game Complete!</h2>
-            <p className="text-lg text-muted-foreground">
-              Final Score: {score} out of {questions.length}
-            </p>
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Trophy className="w-16 h-16 text-primary mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-primary">Game Complete!</h2>
+              <p className="text-lg text-muted-foreground">
+                Final Score: {score} out of {questions.length}
+              </p>
+            </motion.div>
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handlePlayAgain}
-              className="px-6 py-3 bg-primary text-white rounded-lg shadow-lg hover:shadow-xl transition-all"
+              className="px-6 py-3 bg-primary text-white rounded-lg shadow-lg hover:shadow-xl transition-all inline-flex items-center gap-2"
             >
+              <RefreshCcw className="w-5 h-5" />
               Play Again
             </motion.button>
           </motion.div>
         )}
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center text-sm text-muted-foreground"
+        >
+          <p>Question {currentQuestion + 1} of {questions.length}</p>
+        </motion.div>
       </motion.div>
     </div>
   );
