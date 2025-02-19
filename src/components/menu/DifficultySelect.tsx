@@ -86,12 +86,13 @@ export function DifficultySelect({
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/0 group-hover:from-primary/10 transition-colors" />
                 
-                {/* <Icon className={`w-8 h-8 mb-4 ${colorClass}`} /> */}
+                <div className=" mb-2 pr-4 flex items-center gap-2 justify-center">
+                <Icon className={`w-8 h-8 ${colorClass}`} />
                 
-                <h2 className={`text-xl font-bold mb-2 ${colorClass}`}>
+                <h2 className={`text-xl font-bold ${colorClass}`}>
                   {diff.name}
                 </h2>
-                
+                </div>
                 <div className="space-y-2">
                   <p className="text-muted-foreground">
                     {diff.flagCount} Flags
