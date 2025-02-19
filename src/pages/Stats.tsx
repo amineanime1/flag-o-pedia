@@ -15,6 +15,7 @@ import {
   Cell
 } from 'recharts';
 import { getGameStats, clearGameStats, type GameResult } from '@/utils/statsUtils';
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
@@ -66,13 +67,16 @@ const Stats = () => {
   }));
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 px-4 py-8">
+    <div className="min-h-screen bg-background px-4 py-8">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="max-w-4xl mx-auto space-y-8"
       >
         <header className="relative text-center space-y-4">
+          <div className="absolute right-0 top-0">
+            <ThemeToggle />
+          </div>
           <Link
             to="/"
             className="absolute left-0 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-gray-100 transition-colors"
@@ -96,7 +100,7 @@ const Stats = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="bg-white p-6 rounded-lg shadow-lg"
+                className="bg-card text-card-foreground p-6 rounded-lg shadow-lg dark:shadow-none"
               >
                 <h3 className="text-lg font-semibold text-primary mb-2">Games Played</h3>
                 <p className="text-3xl font-bold">{stats.length}</p>
@@ -106,7 +110,7 @@ const Stats = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="bg-white p-6 rounded-lg shadow-lg"
+                className="bg-card text-card-foreground p-6 rounded-lg shadow-lg dark:shadow-none"
               >
                 <h3 className="text-lg font-semibold text-primary mb-2">Average Score</h3>
                 <p className="text-3xl font-bold">{averageScore}%</p>
@@ -116,7 +120,7 @@ const Stats = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="bg-white p-6 rounded-lg shadow-lg"
+                className="bg-card text-card-foreground p-6 rounded-lg shadow-lg dark:shadow-none"
               >
                 <h3 className="text-lg font-semibold text-primary mb-2">Last Played</h3>
                 <p className="text-3xl font-bold">
@@ -130,7 +134,7 @@ const Stats = () => {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.4 }}
-                className="bg-white p-6 rounded-lg shadow-lg"
+                className="bg-card text-card-foreground p-6 rounded-lg shadow-lg dark:shadow-none"
               >
                 <h3 className="text-lg font-semibold text-primary mb-4">Score Distribution</h3>
                 <div className="h-[300px]">
@@ -150,7 +154,7 @@ const Stats = () => {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.5 }}
-                className="bg-white p-6 rounded-lg shadow-lg"
+                className="bg-card text-card-foreground p-6 rounded-lg shadow-lg dark:shadow-none"
               >
                 <h3 className="text-lg font-semibold text-primary mb-4">Difficulty Distribution</h3>
                 <div className="h-[300px]">
