@@ -1,19 +1,19 @@
-import { useState, useCallback } from "react";
-import { motion } from "framer-motion";
+import { useState, useCallback, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ComposableMap,
   Geographies,
   Geography,
   ZoomableGroup,
+  Marker,
 } from "react-simple-maps";
-import { feature } from "topojson-client";
-import { Home, SkipForward } from "lucide-react";
+import { Home, SkipForward, Trophy, Maximize2, Minimize2, Info, X } from "lucide-react";
 import type { Question, GameHistory } from "@/types/game";
 import { GameSummary } from "@/components/GameSummary";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
-const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
-
-const ZOOM_THRESHOLD = 2000; // Distance threshold for correct answers in kilometers
+// High-detail map with natural earth data
+const geoUrl = "https://raw.githubusercontent.com/deldersveld/topojson/master/world-countries-sans-antarctica.json";
 
 interface MapLocationGameProps {
   mode: "world" | "us";
@@ -42,6 +42,14 @@ export function MapLocationGame({
 }: MapLocationGameProps) {
   const [selectedLocation, setSelectedLocation] = useState<[number, number] | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
+  const [position, setPosition] = useState({ coordinates: [0, 0], zoom: 1 });
+
+  useEffect(() => {
+    setShowAnswer(false);
+    setSelectedLocation(null);
+  }, [currentQuestion]);
 
   const handleClick = useCallback((geo: any) => {
     if (isAnswered || showAnswer) return;
@@ -55,10 +63,33 @@ export function MapLocationGame({
     setSelectedLocation(coordinates);
     setShowAnswer(true);
 
-    // Check if the clicked country matches the correct answer
     const isCorrect = countryName.toLowerCase() === questions[currentQuestion].correctAnswer.toLowerCase();
     onAnswer(countryName);
   }, [currentQuestion, isAnswered, onAnswer, questions, showAnswer]);
+
+  const handleZoomIn = () => {
+    if (position.zoom >= 4) return;
+    setPosition(pos => ({ ...pos, zoom: pos.zoom * 1.2 }));
+  };
+
+  const handleZoomOut = () => {
+    if (position.zoom <= 1) return;
+    setPosition(pos => ({ ...pos, zoom: pos.zoom / 1.2 }));
+  };
+
+  const handleMoveEnd = (position: any) => {
+    setPosition(position);
+  };
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
 
   if (isAnswered && currentQuestion === questions.length) {
     return (
@@ -73,101 +104,278 @@ export function MapLocationGame({
     );
   }
 
+  const getCountryColor = (geo: any) => {
+    const countryName = geo.properties.name.toLowerCase();
+    const isCurrentAnswer = countryName === questions[currentQuestion].correctAnswer.toLowerCase();
+    
+    // Check if this country was in previous questions
+    const previousQuestion = gameHistory.find(q => 
+      q.correctAnswer.toLowerCase() === countryName
+    );
+
+    if (showAnswer && isCurrentAnswer) {
+      return "#22c55e"; // Correct answer (green)
+    } else if (previousQuestion) {
+      if (!previousQuestion.userAnswer) {
+        return "#94a3b8"; // Skipped questions (gray)
+      } else if (previousQuestion.userAnswer.toLowerCase() === countryName) {
+        return previousQuestion.userAnswer.toLowerCase() === previousQuestion.correctAnswer.toLowerCase()
+          ? "#86efac" // Correctly answered (light green)
+          : "#fca5a5"; // Incorrectly answered (light red)
+      }
+    }
+    
+    return "#64748b"; // Default color
+  };
+
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="flex justify-between items-center mb-8">
-        <button
-          onClick={onBackToMenu}
-          className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
-        >
-          <Home className="w-5 h-5" />
-          Back to Menu
-        </button>
-        <div className="text-center">
-          <p className="text-lg font-semibold text-primary">
-            Question {currentQuestion + 1} of {questions.length}
-          </p>
-          <p className="text-sm text-muted-foreground">Score: {score}</p>
-        </div>
-        <button
-          onClick={onSkipQuestion}
-          className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
-          disabled={isAnswered || showAnswer}
-        >
-          <SkipForward className="w-5 h-5" />
-          Skip
-        </button>
-      </div>
-
-      <div className="bg-card rounded-lg shadow-lg p-6 mb-8">
-        <div className="flex justify-center mb-6">
-          <img
-            src={questions[currentQuestion].flagUrl}
-            alt="Flag to guess"
-            className="h-32 object-cover rounded-lg shadow-md"
-          />
-        </div>
-        
-        <p className="text-center text-lg mb-4">
-          Click on the map where you think this country is located
-        </p>
-
-        <div className="relative aspect-[2/1] w-full overflow-hidden rounded-lg border border-border">
-          <ComposableMap projection="geoMercator">
-            <ZoomableGroup center={[0, 0]} zoom={1}>
-              <Geographies geography={geoUrl}>
-                {({ geographies }) =>
-                  geographies.map((geo) => (
-                    <Geography
-                      key={geo.rsmKey}
-                      geography={geo}
-                      onClick={() => handleClick(geo)}
-                      style={{
-                        default: {
-                          fill: showAnswer
-                            ? geo.properties.name.toLowerCase() ===
-                              questions[currentQuestion].correctAnswer.toLowerCase()
-                              ? "#22c55e"
-                              : "#64748b"
-                            : "#64748b",
-                          stroke: "#1f2937",
-                          strokeWidth: 0.5,
-                          outline: "none",
-                        },
-                        hover: {
-                          fill: "#94a3b8",
-                          stroke: "#1f2937",
-                          strokeWidth: 0.5,
-                          outline: "none",
-                        },
-                        pressed: {
-                          fill: "#64748b",
-                          stroke: "#1f2937",
-                          strokeWidth: 0.5,
-                          outline: "none",
-                        },
-                      }}
-                    />
-                  ))
-                }
-              </Geographies>
-            </ZoomableGroup>
-          </ComposableMap>
-        </div>
-
-        {showAnswer && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-4 text-center"
+    <div className={`relative ${isFullscreen ? 'fixed inset-0 z-50 bg-background' : 'min-h-screen'}`}>
+      {/* Top Bar */}
+      <motion.div 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="absolute top-0 left-0 right-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border"
+      >
+        <div className="container mx-auto px-4 py-2 flex justify-between items-center">
+          <button
+            onClick={onBackToMenu}
+            className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
           >
-            <p className="text-lg font-semibold">
-              The correct country was:{" "}
-              <span className="text-primary">{questions[currentQuestion].correctAnswer}</span>
-            </p>
+            <Home className="w-5 h-5" />
+            <span className="hidden sm:inline">Back to Menu</span>
+          </button>
+
+          <div className="flex items-center gap-4">
+            <motion.div 
+              className="flex items-center gap-2 bg-card px-3 py-1 rounded-full"
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+            >
+              <Trophy className="w-4 h-4 text-primary" />
+              <span className="font-medium">{score}/{questions.length}</span>
+            </motion.div>
+            
+            <motion.div 
+              className="bg-card px-3 py-1 rounded-full"
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+            >
+              <span className="text-sm">Question {currentQuestion + 1}/{questions.length}</span>
+            </motion.div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowInfo(!showInfo)}
+              className="p-2 hover:bg-secondary rounded-full transition-colors"
+            >
+              <Info className="w-5 h-5" />
+            </button>
+            <ThemeToggle />
+            <button
+              onClick={toggleFullscreen}
+              className="p-2 hover:bg-secondary rounded-full transition-colors"
+            >
+              {isFullscreen ? (
+                <Minimize2 className="w-5 h-5" />
+              ) : (
+                <Maximize2 className="w-5 h-5" />
+              )}
+            </button>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Current Flag */}
+      <AnimatePresence>
+        {!showAnswer && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="absolute top-20 left-1/2 -translate-x-1/2 z-10 bg-card shadow-lg rounded-lg overflow-hidden border border-border"
+          >
+            <img
+              src={questions[currentQuestion].flagUrl}
+              alt="Flag to guess"
+              className="h-32 sm:h-40 w-auto object-cover"
+            />
           </motion.div>
         )}
+      </AnimatePresence>
+
+      {/* Map Container */}
+      <div className="w-full h-screen">
+        <ComposableMap
+          projection="geoMercator"
+          className="w-full h-full bg-[#1B2A4A] dark:bg-[#0A1628]"
+        >
+          <ZoomableGroup
+            center={position.coordinates}
+            zoom={position.zoom}
+            onMoveEnd={handleMoveEnd}
+          >
+            <Geographies geography={geoUrl}>
+              {({ geographies }) =>
+                geographies.map((geo) => (
+                  <Geography
+                    key={geo.rsmKey}
+                    geography={geo}
+                    onClick={() => handleClick(geo)}
+                    style={{
+                      default: {
+                        fill: getCountryColor(geo),
+                        stroke: "#1f2937",
+                        strokeWidth: 0.5,
+                        outline: "none",
+                      },
+                      hover: {
+                        fill: "#94a3b8",
+                        stroke: "#1f2937",
+                        strokeWidth: 0.5,
+                        outline: "none",
+                        cursor: "pointer",
+                      },
+                      pressed: {
+                        fill: "#64748b",
+                        stroke: "#1f2937",
+                        strokeWidth: 0.5,
+                        outline: "none",
+                      },
+                    }}
+                  />
+                ))
+              }
+            </Geographies>
+            {selectedLocation && (
+              <Marker coordinates={selectedLocation}>
+                <circle r={4} fill="#ef4444" />
+              </Marker>
+            )}
+          </ZoomableGroup>
+        </ComposableMap>
       </div>
+
+      {/* Bottom Bar */}
+      <motion.div 
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="absolute bottom-0 left-0 right-0 z-10 bg-background/80 backdrop-blur-sm border-t border-border"
+      >
+        <div className="container mx-auto px-4 py-2 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleZoomOut}
+              className="p-2 hover:bg-secondary rounded-full transition-colors"
+              disabled={position.zoom <= 1}
+            >
+              -
+            </button>
+            <div className="w-20 h-1 bg-secondary rounded-full">
+              <div 
+                className="h-full bg-primary rounded-full transition-all"
+                style={{ width: `${((position.zoom - 1) / 3) * 100}%` }}
+              />
+            </div>
+            <button
+              onClick={handleZoomIn}
+              className="p-2 hover:bg-secondary rounded-full transition-colors"
+              disabled={position.zoom >= 4}
+            >
+              +
+            </button>
+          </div>
+
+          <button
+            onClick={onSkipQuestion}
+            className="flex items-center gap-2 px-4 py-2 bg-secondary rounded-full hover:bg-secondary/80 transition-colors"
+            disabled={isAnswered || showAnswer}
+          >
+            <SkipForward className="w-4 h-4" />
+            <span>Skip</span>
+          </button>
+        </div>
+      </motion.div>
+
+      {/* Info Modal */}
+      <AnimatePresence>
+        {showInfo && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center"
+          >
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+              className="bg-card p-6 rounded-lg shadow-lg max-w-md w-full mx-4"
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">How to Play</h2>
+                <button
+                  onClick={() => setShowInfo(false)}
+                  className="p-2 hover:bg-secondary rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="space-y-4 text-muted-foreground">
+                <p>Click on the country you think matches the displayed flag.</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-[#22c55e]" />
+                    <span>Correct Answer</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-[#94a3b8]" />
+                    <span>Skipped</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-[#86efac]" />
+                    <span>Previously Correct</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-[#fca5a5]" />
+                    <span>Previously Wrong</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Answer Overlay */}
+      <AnimatePresence>
+        {showAnswer && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
+          >
+            <motion.div
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              className="bg-card/95 backdrop-blur-sm p-6 rounded-lg shadow-lg text-center"
+            >
+              <p className="text-xl font-semibold mb-2">
+                The correct country was:
+              </p>
+              <p className="text-3xl font-bold text-primary mb-4">
+                {questions[currentQuestion].correctAnswer}
+              </p>
+              <img
+                src={questions[currentQuestion].flagUrl}
+                alt={questions[currentQuestion].correctAnswer}
+                className="h-24 mx-auto mb-4 rounded shadow-md"
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 } 
