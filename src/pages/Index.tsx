@@ -13,7 +13,7 @@ import { DifficultySelect } from "@/components/menu/DifficultySelect";
 import { TypeAnswerGame } from "@/components/game-modes/TypeAnswerGame";
 import { MultipleChoiceGame } from "@/components/game-modes/MultipleChoiceGame";
 import { MapLocationGame } from "@/components/game-modes/MapLocationGame";
-import type { GameState, Question, GameHistory } from "@/types/game";
+import type { GameState, Question, GameHistory, GameResult } from "@/types/game";
 
 const Index = () => {
   const [gameState, setGameState] = useState<GameState>({ 
@@ -118,17 +118,21 @@ const Index = () => {
       setTimerInterval(null);
     }
 
-    // Save game stats
-    saveGameResult({
+    const result: Omit<GameResult, "date"> = {
       mode: gameState.mode!,
       gameMode: gameState.gameMode!,
       difficulty: gameState.difficulty!.name,
       score,
       total: gameQuestions.length,
-      modifiers: gameState.difficulty?.modifiers,
       timeRemaining: timeRemaining || undefined,
-      perfectRun: score === gameQuestions.length
-    });
+      perfectRun: score === gameQuestions.length,
+      flagUrl: gameQuestions[currentQuestion].flagUrl,
+      correctAnswer: gameQuestions[currentQuestion].correctAnswer,
+      modifiers: gameState.difficulty?.modifiers
+    };
+
+    // Save game stats
+    saveGameResult(result);
 
     if (timeUp) {
       toast({
