@@ -194,17 +194,19 @@ export function MapLocationGame({
         animate={{ opacity: 1 }}
         className="absolute top-4 right-4 z-10"
       >
-        <div className="bg-card border border-border rounded-lg overflow-hidden shadow-lg w-32">
-          <img
-            src={questions[currentQuestion].flagUrl}
-            alt="Flag to guess"
-            className="w-full h-auto"
-            style={{
-              filter: questions[currentQuestion].blurAmount 
-                ? `blur(${questions[currentQuestion].blurAmount}px)` 
-                : 'none'
-            }}
-          />
+        <div className="bg-card border border-border rounded-lg overflow-hidden shadow-lg w-32 p-2">
+          <div className="relative w-full flex items-center justify-center">
+            <img
+              src={questions[currentQuestion].flagUrl}
+              alt="Flag to guess"
+              className="max-w-full w-auto h-auto object-contain"
+              style={{
+                filter: questions[currentQuestion].blurAmount 
+                  ? `blur(${questions[currentQuestion].blurAmount}px)` 
+                  : 'none'
+              }}
+            />
+          </div>
         </div>
       </motion.div>
 
