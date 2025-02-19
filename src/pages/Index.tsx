@@ -75,6 +75,8 @@ const Index = () => {
     setScore(0);
     setSelectedAnswer(null);
     setIsAnswered(false);
+    setGameHistory([]);
+    setInputValue("");
   };
 
   const handleBackToMenu = () => {
@@ -84,6 +86,8 @@ const Index = () => {
     setScore(0);
     setSelectedAnswer(null);
     setIsAnswered(false);
+    setGameHistory([]);
+    setInputValue("");
   };
   const handleStatsClick = () => {
     window.location.href = '/stats';
@@ -99,11 +103,19 @@ const Index = () => {
       setScore(prev => prev + 1);
     }
 
+    // Add current question to game history
+    setGameHistory(prev => [...prev, {
+      flagUrl: gameQuestions[currentQuestion].flagUrl,
+      correctAnswer: gameQuestions[currentQuestion].correctAnswer,
+      userAnswer: option
+    }]);
+
     setTimeout(() => {
       if (currentQuestion < gameQuestions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
         setSelectedAnswer(null);
         setIsAnswered(false);
+        setInputValue(""); // Reset input when moving to next question
       } else {
         // Save game stats when game is complete
         saveGameResult({
