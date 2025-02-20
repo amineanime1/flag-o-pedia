@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
-import { Globe, Map, BarChart2 } from "lucide-react";
+import { Globe, Map, BarChart2, Users } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useNavigate } from "react-router-dom";
 
 interface MainMenuProps {
   onGameStart: (mode: "world" | "us") => void;
@@ -8,6 +9,8 @@ interface MainMenuProps {
 }
 
 export const MainMenu = ({ onGameStart, onStatsClick }: MainMenuProps) => {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-background px-4 py-8">
       <motion.div
@@ -69,6 +72,24 @@ export const MainMenu = ({ onGameStart, onStatsClick }: MainMenuProps) => {
               <div className="text-center">
                 <h2 className="text-2xl font-bold text-primary mb-2">US State Flags</h2>
                 <p className="text-muted-foreground">Challenge yourself with flags from US states</p>
+              </div>
+            </div>
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.02, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
+            whileTap={{ scale: 0.98 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            onClick={() => navigate("/multiplayer")}
+            className="p-6 rounded-lg bg-card text-card-foreground shadow-lg hover:shadow-xl dark:shadow-primary/10 dark:hover:shadow-primary/20 dark:hover:bg-secondary/20 transition-all group cursor-pointer md:col-span-2"
+          >
+            <div className="flex flex-col items-center gap-4">
+              <Users className="w-12 h-12 text-primary group-hover:text-primary/80 transition-colors" />
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-primary mb-2">Multiplayer Mode</h2>
+                <p className="text-muted-foreground">Compete with friends in real-time flag challenges</p>
               </div>
             </div>
           </motion.button>
