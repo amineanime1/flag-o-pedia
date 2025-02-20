@@ -1,3 +1,5 @@
+export type GameMode = "multiple" | "type" | "map";
+
 export interface Question {
   flagUrl: string;
   correctAnswer: string;
@@ -17,7 +19,7 @@ export interface GameHistory {
 
 export interface GameState {
   mode: "world" | "us" | null;
-  gameMode: "multiple" | "type" | "map" | null;
+  gameMode: GameMode | null;
   difficulty: {
     name: string;
     flagCount: number;
@@ -33,7 +35,7 @@ export interface GameModifiers {
 
 export interface GameResult extends GameHistory {
   mode: "world" | "us";
-  gameMode: "multiple" | "type" | "map";
+  gameMode: GameMode;
   difficulty: string;
   score: number;
   total: number;
@@ -41,4 +43,4 @@ export interface GameResult extends GameHistory {
   modifiers?: GameModifiers;
   timeRemaining?: number;
   perfectRun?: boolean;
-} 
+}
