@@ -7,12 +7,21 @@ import type { GameMode } from "@/types/game";
 import { TypeAnswerGame } from "./pages/TypeAnswerGame";
 // import { MapLocationGame } from "./pages/MapLocationGame";
 import { MultiplayerGame } from "./pages/MultiplayerGame";
+import Index from "./pages/Index";
 import Stats from "./pages/Stats";
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  const gameMode: GameMode = "multiple"; // Explicitly type the gameMode
+  const gameMode = {
+    name: "Multiple Choice",
+    flagCount: 10,
+    modifiers: {
+      timeLimit: 120, // 2 minutes
+      blurAmount: 0,
+      noDeathMode: false
+    }
+  };
 
   return (
     <WebSocketProvider>
@@ -20,7 +29,8 @@ const App = () => {
         <QueryClientProvider client={queryClient}>
           <Router>
             <Routes>
-              <Route path="/" element={<MultipleChoiceGame gameMode={gameMode} />} />
+            <Route path="/" element={<Index />} />
+              <Route path="/choice" element={<MultipleChoiceGame gameMode={gameMode} />} />
               {/* <Route path="/type" element={<TypeAnswerGame />} />
               <Route path="/map" element={<MapLocationGame />} /> */}
               <Route path="/multiplayer" element={<MultiplayerGame />} />
