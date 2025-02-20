@@ -1,7 +1,8 @@
-const WebSocket = require('ws');
-const { generateQuestions } = require('./src/utils/gameUtils');
+import { WebSocketServer } from 'ws';
+import { generateQuestions } from './src/utils/gameUtils.ts';
+import { WebSocket } from 'ws';
 
-const wss = new WebSocket.Server({ port: 3001 });
+const wss = new WebSocketServer({ port: 3001 });
 const rooms = new Map();
 
 function broadcast(roomId, message) {

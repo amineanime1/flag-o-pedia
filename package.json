@@ -9,7 +9,7 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "server": "node server.js"
+    "server": "node --loader ts-node/esm server.js"
   },
   "dependencies": {
     "@capacitor/android": "^7.0.1",
@@ -93,6 +93,7 @@
     "tailwindcss": "^3.4.11",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
-    "vite": "^5.4.1"
+    "vite": "^5.4.1",
+    "ts-node": "^10.9.2"
   }
 }
