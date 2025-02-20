@@ -1,32 +1,33 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import Stats from "./pages/Stats";
 import { ThemeProvider } from "./providers/theme-provider";
+import { WebSocketProvider } from "@/contexts/WebSocketContext";
+import { MultipleChoiceGame } from "./pages/MultipleChoiceGame";
+import { TypeAnswerGame } from "./pages/TypeAnswerGame";
+import { MapLocationGame } from "./pages/MapLocationGame";
+import { MultiplayerGame } from "./pages/MultiplayerGame";
+import Stats from "./pages/Stats";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <ThemeProvider defaultTheme="light" storageKey="flag-o-pedia-theme">
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/stats" element={<Stats />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </ThemeProvider>
-);
+const App = () => {
+  return (
+    <WebSocketProvider>
+      <ThemeProvider defaultTheme="light" storageKey="flag-o-pedia-theme">
+        <QueryClientProvider client={queryClient}>
+          <Router>
+            <Routes>
+              <Route path="/" element={<MultipleChoiceGame />} />
+              <Route path="/type" element={<TypeAnswerGame />} />
+              <Route path="/map" element={<MapLocationGame />} />
+              <Route path="/multiplayer" element={<MultiplayerGame />} />
+              <Route path="/stats" element={<Stats />} />
+            </Routes>
+          </Router>
+        </QueryClientProvider>
+      </ThemeProvider>
+    </WebSocketProvider>
+  );
+};
 
 export default App;
