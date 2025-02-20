@@ -1,14 +1,48 @@
 import { WebSocket } from 'ws';
-import { Question } from './game';
 
 export interface Player {
   id: string;
   name: string;
-  score: number;
-  isHost: boolean;
-  hasAnswered: boolean;
   ws: WebSocket;
-  currentAnswer?: string;
+  score: number;
+  hasAnswered: boolean;
+  isHost: boolean;
+}
+
+export interface Question {
+  id: number;
+  question: string;
+  options: string[];
+  correctAnswer: string;
+  imageUrl: string;
+  results?: Record<string, {
+    answer: string;
+    isCorrect: boolean;
+    timeSpent: number;
+  }>;
+}
+
+export interface Room {
+  id: string;
+  password: string;
+  players: Player[];
+  gameState: 'waiting' | 'voting' | 'playing' | 'finished';
+  votingState?: {
+    votes: Record<string, {
+      mode: 'world' | 'us';
+      gameMode: 'multiple' | 'type' | 'map';
+    }>;
+  };
+  gameSettings?: {
+    mode: 'world' | 'us';
+    gameMode: 'multiple' | 'type' | 'map';
+    timePerQuestion: number;
+    totalQuestions: number;
+  };
+  currentQuestion?: number;
+  questions?: Question[];
+  timeRemaining?: number;
+  timer?: NodeJS.Timeout;
 }
 
 export type GameMode = 'multiple' | 'type' | 'map';
@@ -32,34 +66,7 @@ export interface VotingState {
   };
 }
 
-export interface Room {
-  id: string;
-  password: string;
-  players: Player[];
-  gameState: 'waiting' | 'voting' | 'playing' | 'finished';
-  votingState?: VotingState;
-  gameSettings?: GameSettings;
-  currentQuestion?: number;
-  questions?: Question[];
-  timeRemaining?: number;
-  timer?: NodeJS.Timeout;
-}
-
 export interface MultiplayerGameState {
   room: Room | null;
   player: Player | null;
 }
-
-export interface Question {
-  flagUrl: string;
-  options: string[];
-  correctAnswer: string;
-  blurAmount: number;
-  results?: {
-    [playerId: string]: {
-      answer: string;
-      isCorrect: boolean;
-      timeSpent: number;
-    };
-  };
-} 
