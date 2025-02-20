@@ -9,7 +9,7 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "server": "node --loader ts-node/esm server.js"
+    "server": "node --loader ts-node/esm server.mts"
   },
   "dependencies": {
     "@capacitor/android": "^7.0.1",
@@ -82,6 +82,7 @@
     "@types/node": "^22.5.5",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
+    "@types/ws": "^8.5.10",
     "@vitejs/plugin-react-swc": "^3.5.0",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.9.0",

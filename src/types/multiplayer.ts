@@ -1,10 +1,35 @@
+import { WebSocket } from 'ws';
+import { Question } from './game';
+
 export interface Player {
   id: string;
   name: string;
   score: number;
   isHost: boolean;
   hasAnswered: boolean;
+  ws: WebSocket;
   currentAnswer?: string;
+}
+
+export type GameMode = 'multiple' | 'type' | 'map';
+export type GameRegion = 'world' | 'us';
+
+export interface GameSettings {
+  mode: GameRegion;
+  gameMode: GameMode;
+  timePerQuestion: number;
+  totalQuestions: number;
+}
+
+export interface VotingState {
+  mode: GameRegion;
+  gameMode: GameMode;
+  votes: {
+    [playerId: string]: {
+      mode: GameRegion;
+      gameMode: GameMode;
+    };
+  };
 }
 
 export interface Room {
@@ -12,25 +37,12 @@ export interface Room {
   password: string;
   players: Player[];
   gameState: 'waiting' | 'voting' | 'playing' | 'finished';
-  votingState?: {
-    mode: 'world' | 'us';
-    gameMode: 'multiple' | 'type' | 'map';
-    votes: {
-      [playerId: string]: {
-        mode: 'world' | 'us';
-        gameMode: 'multiple' | 'type' | 'map';
-      };
-    };
-  };
-  gameSettings?: {
-    mode: 'world' | 'us';
-    gameMode: 'multiple' | 'type' | 'map';
-    timePerQuestion: number;
-    totalQuestions: number;
-  };
+  votingState?: VotingState;
+  gameSettings?: GameSettings;
   currentQuestion?: number;
   questions?: Question[];
   timeRemaining?: number;
+  timer?: NodeJS.Timeout;
 }
 
 export interface MultiplayerGameState {

@@ -1,12 +1,18 @@
 export type GameMode = "multiple" | "type" | "map";
 
 export interface Question {
-  flagUrl: string;
+  id: string;
+  question: string;
   correctAnswer: string;
-  aliases?: string[];
   options?: string[];
-  coordinates?: [number, number];
-  blurAmount?: number;
+  image?: string;
+  results?: {
+    [playerId: string]: {
+      answer: string;
+      isCorrect: boolean;
+      timeSpent: number;
+    };
+  };
 }
 
 export interface GameHistory {
