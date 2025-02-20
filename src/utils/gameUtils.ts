@@ -127,9 +127,9 @@ export const usDifficulties: DifficultyLevel[] = [
 
 export function getBlurAmount(level: "none" | "light" | "medium" | "heavy"): number {
   switch (level) {
-    case "light": return 2;
-    case "medium": return 4;
-    case "heavy": return 8;
+    case "light": return 8;
+    case "medium": return 18;
+    case "heavy": return 30;
     default: return 0;
   }
 }

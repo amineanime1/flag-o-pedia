@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Timer } from "lucide-react";
+import { Timer } from "@/components/Timer";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TimeUpPopup } from "@/components/TimeUpPopup";

@@ -177,17 +177,30 @@ const Index = () => {
       setTimerInterval(null);
     }
 
+    // Guard against null states
+    if (!gameState.mode || !gameState.gameMode || !gameState.difficulty || !gameQuestions.length) {
+      console.warn('Game state is incomplete');
+      return;
+    }
+
+    // Guard against invalid current question index
+    const currentFlag = gameQuestions[currentQuestion];
+    if (!currentFlag) {
+      console.warn('Current question is undefined');
+      return;
+    }
+
     const result: Omit<GameResult, "date"> = {
-      mode: gameState.mode!,
-      gameMode: gameState.gameMode!,
-      difficulty: gameState.difficulty!.name,
+      mode: gameState.mode,
+      gameMode: gameState.gameMode,
+      difficulty: gameState.difficulty.name,
       score,
       total: gameQuestions.length,
       timeRemaining: timeRemaining || undefined,
       perfectRun: score === gameQuestions.length,
-      flagUrl: gameQuestions[currentQuestion].flagUrl,
-      correctAnswer: gameQuestions[currentQuestion].correctAnswer,
-      modifiers: gameState.difficulty?.modifiers
+      flagUrl: currentFlag.flagUrl,
+      correctAnswer: currentFlag.correctAnswer,
+      modifiers: gameState.difficulty.modifiers
     };
 
     // Save game stats
@@ -205,7 +218,7 @@ const Index = () => {
   };
 
   const handleAnswer = (option: string) => {
-    if (isAnswered) return;
+    if (isAnswered || !gameQuestions.length) return;
 
     setSelectedAnswer(option);
     setIsAnswered(true);
@@ -241,13 +254,15 @@ const Index = () => {
         setIsAnswered(false);
         setInputValue("");
         setIsCorrect(null);
-      } else {
+      } else if (gameState.mode && gameState.gameMode && gameState.difficulty) {
         handleGameEnd();
       }
     }, 1000);
   };
 
   const handleSkipQuestion = () => {
+    if (!gameQuestions.length) return;
+
     setGameHistory(prev => [...prev, {
       flagUrl: gameQuestions[currentQuestion].flagUrl,
       correctAnswer: gameQuestions[currentQuestion].correctAnswer
@@ -263,8 +278,7 @@ const Index = () => {
         description: `Correct answer: ${gameQuestions[currentQuestion].correctAnswer}`,
         duration: 2000,
       });
-    } else {
-      // Handle last question skip
+    } else if (gameState.mode && gameState.gameMode && gameState.difficulty) {
       setIsAnswered(true);
       handleGameEnd();
     }
